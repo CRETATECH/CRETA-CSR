@@ -1,0 +1,39 @@
+1. GIOI THIEU
+Tai lieu nay duoc viet nham giai thich thiet ke cua source code Arduino va ESP phuc vu cho buoi demo Project CSR vao thu 2 ngay 30/10/2017.
+
+2. THIET KE
+2.1 Phan cung
+- Su dung Arduino (Mega/Uno/Nano) va ESP.
+- Arduino nhan nhiem vu doc cac gia tri cam bien va dieu khien 2 thiet bi.
+- ESP nhan nhiem vu chuyen frame cua Arduino len broker MQTT (Chi kiem tra dung cau truc, sau do chuyen thang len).
+- Cam bien muc nuoc thuc chat la mot cong tat thuong dong (dong khi muc nuoc duoi nguong, va mo khi muc nuoc tren nguong).
+- Cam bien nhiet do DS18B20 su dung giao tiep 1-wire.
+
+2.2 Phan mem
+2.2.1 Phu thuoc
+- ESP8266 board packet for Arduino IDE (latest version).
+- Thu vien OneWire (latest version).
+- Thu vien DallasTemperature (latest version).
+- Thu vien ArduinoJson (version 5.5.1).
+2.2.2 Dieu khien phan cung
+- Thiet bi On/Off luon luon la tich cuc thap (On <=> Low).
+- Cam bien DS18B20 su dung giao thuc 1-wire, su dung thu vien DallasTemperature de doc gia tri.
+- Cong tac phao lap trinh nhu 1 nut nhan. Khi muc nuoc DUOI NGUONG nut nhan DONG, khi muc nuoc TREN NGUONG nut nhan HO.
+2.2.3 Giao tiep
+Frame truyen su dung giong nhu frame truyen cua WiSock.
+Quy uoc ADDR:
+  "1": Device On/Off 1
+  "2": Device On/Off 2
+  "3": Cam bien nhiet do
+  "4": Cam bien muc nuoc
+Quy uoc DATA:
+  "1": "On" hoac "Off"
+  "2": "On" hoac "Off"
+  "3": String cua mot so Float
+  "4": "Upper" neu muc nuoc tren nguong quy dinh
+       "Lower" neu muc nuoc duoi nguong quy dinh
+2.2.4 Co che hoat dong
+- Dinh ky gui thong tin cam bien len broker MQTT.
+- Dieu khien On/Off thiet bi khi nhan duoc command.
+- Sau khi dieu khien thiet bi phai gui frame thong bao trang thai moi cua thiet bi.
+- Van co the tra gia tri cam bien ngay khi duoc yeu cau.
