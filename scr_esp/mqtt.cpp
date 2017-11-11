@@ -15,7 +15,7 @@ char gMqttTopicIn[25];
 char gMqttTopicOut[25];
 WiFiClient gESPClient;
 PubSubClient client(gESPClient);
-const char* gMqttServer = "iot.eclipse.org";
+const char* gMqttServer = "cretacam.ddns.net";
 /*************************************************/
 /*                  LOCAL  VARIABLE              */
 /*************************************************/
@@ -74,7 +74,7 @@ void mqttCreateTopic(void)
     Serial.println(gMqttTopicOut);
   #endif
   mqttCreateClientID ();
-  client.setServer(gMqttServer, 1883);
+  client.setServer(gMqttServer, 1889);
   client.setCallback(callback);
 
 }

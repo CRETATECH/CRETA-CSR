@@ -6,6 +6,8 @@
 #define WATER_SENSOR 3 // Pin 3
 #define DEVICE_1 4
 #define DEVICE_2 5
+#define BUTTON_1 6
+#define BUTTON_2 7
 
 OneWire onewire(ONE_WIRE_BUS);
 DallasTemperature sensors(&onewire);
@@ -25,6 +27,8 @@ void setup() {
   pinMode(WATER_SENSOR, INPUT_PULLUP);
   pinMode(DEVICE_1, OUTPUT);
   pinMode(DEVICE_2, OUTPUT);
+  pinMode(BUTTON_1, INPUT_PULLUP);
+  pinMode(BUTTON_2, INPUT_PULLUP);
   deviceControl("1", "Off");
   deviceControl("2", "Off");
   delay(500); //delay to not recv sh*t data from esp reset
@@ -32,8 +36,8 @@ void setup() {
   Serial.begin(115200);
   while(!Serial);
   
-  Timer1.initialize(1000000); // khởi tạo timer 1 đến 1 giây
-  Timer1.attachInterrupt(Blink); 
+  // Timer1.initialize(1000000); // khởi tạo timer 1 đến 1 giây
+  // Timer1.attachInterrupt(Blink); 
   
   /* Khoi dong cam bien nhiet do */
   sensors.begin();
@@ -52,53 +56,51 @@ void Serial_Proc (void)
     /* Check JSON parse */
     if(true == parseJson(ss))
     {
-      if(func == "Data") 
+      if(func == "002") 
       {
-        if(addr == "1") 
+        if(addr == "0101") 
         {
-          deviceStatusSend("Data", addr, (digitalRead(DEVICE_1) == HIGH)? "Off" : "On");
+          deviceStatusSend("002", addr, (digitalRead(DEVICE_1) == HIGH)? "0" : "1");
         }
-        else if(addr == "2") 
+        else if(addr == "0102") 
         {
-          deviceStatusSend("Data", addr, (digitalRead(DEVICE_2) == HIGH)? "Off" : "On");
+          deviceStatusSend("002", addr, (digitalRead(DEVICE_2) == HIGH)? "0" : "1");
         }
-        else if(addr == "4") 
+        else if(addr == "0201") 
         {
           dataTempSend();
         }
-        else if(addr == "3") 
+        else if(addr == "0401") 
         {
           dataWaterSend();
         }
-      } else if(func == "Ctrl")
+      } else if(func == "001")
         {
         if(true == deviceControl(addr, data))
         {
           /* Gui frame thong bao trang thai moi */
-          if(addr == "1") 
+          if(addr == "0101") 
           {
             if(digitalRead(DEVICE_1) == HIGH) 
             {
-              deviceStatusSend("Ctrl", addr, "Off");
+              deviceStatusSend("001", addr, "0");
             } else 
               {
-              deviceStatusSend("Ctrl", addr, "On");
+              deviceStatusSend("001", addr, "1");
               }
-          } else if(addr == "2") 
+          } else if(addr == "0102") 
             {
             if(digitalRead(DEVICE_2) == HIGH) 
             {
-              deviceStatusSend("Ctrl", addr, "Off");
+              deviceStatusSend("001", addr, "0");
             } else {
-              deviceStatusSend("Ctrl", addr, "On");
+              deviceStatusSend("001", addr, "1");
             }
           }
         }
-        if (addr == "4")
-        {
-          Tth = data.toInt();
-          Serial.print(ss);
-        }
+      }
+      else {
+        sendErrorFrame("002");
       }
     }
     /* Clear */
@@ -107,13 +109,92 @@ void Serial_Proc (void)
     addr = "";
     data = "";
   }
+  button1Pressed();
+  button2Pressed();
+  waterCheck();
 }
 
+void button1Pressed() {
+  static uint8_t _lastStatus = HIGH;
+  static uint32_t _lastPressed = 0;
+  static bool _isPressed = false;
+  uint8_t reading = digitalRead(BUTTON_1);
+  if(reading == LOW) {
+    if(reading != _lastStatus) {
+      _lastPressed = millis();
+    }
+    else if((millis() - _lastPressed) > 250) {
+      if(_isPressed == false) {
+        digitalWrite(DEVICE_1, !digitalRead(DEVICE_1));
+        deviceStatusSend("002", "0101", (digitalRead(DEVICE_1) == LOW)? "1" : "0");
+        _isPressed = true;
+      }
+    }
+  }
+  else {
+    _isPressed = false;
+  }
+  _lastStatus = reading;
+}
 
+void button2Pressed() {
+  static uint8_t _lastStatus = HIGH;
+  static uint32_t _lastPressed = 0;
+  static bool _isPressed = false;
+  uint8_t reading = digitalRead(BUTTON_2);
+  if(reading == LOW) {
+    if(reading != _lastStatus) {
+      _lastPressed = millis();
+    }
+    else if((millis() - _lastPressed) > 250) {
+      if(_isPressed == false) {
+        digitalWrite(DEVICE_2, !digitalRead(DEVICE_2));
+        deviceStatusSend("002", "0102", (digitalRead(DEVICE_2) == LOW)? "1" : "0");
+        _isPressed = true;
+      }
+    }
+  }
+  else {
+    _isPressed = false;
+  }
+  _lastStatus = reading;
+}
+
+void waterCheck() {
+  static uint8_t _lastStatus = HIGH;
+  static uint32_t _lastPressed = 0;
+  static bool _isPressed = false;
+  uint8_t reading = digitalRead(WATER_SENSOR);
+  if(reading != _lastStatus) {
+    _lastPressed = millis();
+    _isPressed = false;
+  }
+  else {
+    if((millis() - _lastPressed) > 500) {
+      if(_isPressed == false) {
+        deviceStatusSend("002", "0401", (reading == LOW)? "0" : "0");
+        _isPressed = true;
+      }
+    }
+  }
+  _lastStatus = reading;
+}
+
+void sendErrorFrame(String code) {
+  String frameTx = "";
+  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"";
+  frameTx += "003";
+  frameTx += "\",\"ADDR\":\"";
+  frameTx += "";
+  frameTx += "\",\"DATA\":\"";
+  frameTx += code;
+  frameTx += "\"}";
+  Serial.println(frameTx);  
+}
 
 void deviceStatusSend(String func, String addr, String data){
   String frameTx = "";
-  frameTx = "{\"ID\":\"CSR\",\"FUNC\":\"";
+  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"";
   frameTx += func;
   frameTx += "\",\"ADDR\":\"";
   frameTx += addr;
@@ -125,17 +206,17 @@ void deviceStatusSend(String func, String addr, String data){
 
 bool deviceControl(String addr, String data){
   uint8_t _pin = "";
-  if(addr == "1") {
+  if(addr == "0101") {
     _pin = DEVICE_1;
-  } else if (addr == "2") {
+  } else if (addr == "0102") {
     _pin = DEVICE_2;
   }
   if(_pin == "") {
     return false;
   }
-  if(data == "On") {
+  if(data == "1") {
     digitalWrite(_pin, LOW);
-  } else if (data == "Off") {
+  } else if (data == "0") {
     digitalWrite(_pin, HIGH);
   } else {
     return false;
@@ -148,6 +229,7 @@ bool parseJson(String json) {
   JsonObject& root = _jsonBuffer.parseObject(json);
   if (!root.success())
   {
+    sendErrorFrame("001");
     return false;
   }
   String _a = root["ID"];
@@ -187,9 +269,9 @@ bool uartGetFrame(String* s) {
 void dataWaterSend() {
   String frameTx = "";
   /* Gui frame muc nuoc */
-  frameTx = "{\"ID\":\"CSR\",\"FUNC\":\"Data\",\"ADDR\":\"3\",\"DATA\":\"";
+  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0401\",\"DATA\":\"";
   bool rWater = isWaterThreshold();
-  String water = (rWater)? "Upper" : "Lower";
+  String water = (rWater)? "1" : "0";
   frameTx += water;
   frameTx += "\"}";
   Serial.print(frameTx);
@@ -198,7 +280,7 @@ void dataWaterSend() {
 void dataTempSend() {
   String frameTx = "";
   /* Gui frame nhiet do */
-  frameTx = "{\"ID\":\"CSR\",\"FUNC\":\"Data\",\"ADDR\":\"4\",\"DATA\":\"";
+  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0201\",\"DATA\":\"";
 
   float rTemp = readTemperatureSensor();
   String temp(rTemp);
@@ -216,7 +298,7 @@ float readTemperatureSensor() {
   delay(50);
   return sensors.getTempCByIndex(0);
 }
-
+/*
 void Blink (void)
 {
   static int i = 0;
@@ -235,4 +317,5 @@ void Blink (void)
   else if (temp < Tth)
     deviceControl ("2", "Off"); 
 }
+*/
 
