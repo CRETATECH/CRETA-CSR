@@ -38,8 +38,8 @@ void setup() {
   Serial.begin(115200);
   while(!Serial);
   
-  Timer1.initialize(1000000); // khởi tạo timer 1 đến 1 giây
-  Timer1.attachInterrupt(Blink); 
+  // Timer1.initialize(1000000); // khởi tạo timer 1 đến 1 giây
+  // Timer1.attachInterrupt(Blink); 
   
   /* Khoi dong cam bien nhiet do */
   sensors.begin();
@@ -300,7 +300,7 @@ float readTemperatureSensor() {
   delay(50);
   return sensors.getTempCByIndex(0);
 }
-
+/*
 void Blink (void)
 {
   static int i = 0;
@@ -319,5 +319,6 @@ void Blink (void)
 //  else if (temp < Tth)
 //    deviceControl ("2", "Off"); 
 }
+*/
 
 
