@@ -27,6 +27,8 @@ void setup() {
   pinMode(WATER_SENSOR, INPUT_PULLUP);
   pinMode(DEVICE_1, OUTPUT);
   pinMode(DEVICE_2, OUTPUT);
+  digitalWrite(DEVICE_1, HIGH);
+  digitalWrite(DEVICE_2, HIGH);
   pinMode(BUTTON_1, INPUT_PULLUP);
   pinMode(BUTTON_2, INPUT_PULLUP);
   deviceControl("1", "Off");
@@ -36,8 +38,8 @@ void setup() {
   Serial.begin(115200);
   while(!Serial);
   
-  // Timer1.initialize(1000000); // khởi tạo timer 1 đến 1 giây
-  // Timer1.attachInterrupt(Blink); 
+  Timer1.initialize(1000000); // khởi tạo timer 1 đến 1 giây
+  Timer1.attachInterrupt(Blink); 
   
   /* Khoi dong cam bien nhiet do */
   sensors.begin();
@@ -172,7 +174,7 @@ void waterCheck() {
   else {
     if((millis() - _lastPressed) > 500) {
       if(_isPressed == false) {
-        deviceStatusSend("002", "0401", (reading == LOW)? "0" : "0");
+        deviceStatusSend("002", "0401", (reading == LOW)? "0" : "1");
         _isPressed = true;
       }
     }
@@ -182,7 +184,7 @@ void waterCheck() {
 
 void sendErrorFrame(String code) {
   String frameTx = "";
-  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"";
+  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"";
   frameTx += "003";
   frameTx += "\",\"ADDR\":\"";
   frameTx += "";
@@ -194,7 +196,7 @@ void sendErrorFrame(String code) {
 
 void deviceStatusSend(String func, String addr, String data){
   String frameTx = "";
-  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"";
+  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"";
   frameTx += func;
   frameTx += "\",\"ADDR\":\"";
   frameTx += addr;
@@ -269,7 +271,7 @@ bool uartGetFrame(String* s) {
 void dataWaterSend() {
   String frameTx = "";
   /* Gui frame muc nuoc */
-  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0401\",\"DATA\":\"";
+  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0401\",\"DATA\":\"";
   bool rWater = isWaterThreshold();
   String water = (rWater)? "1" : "0";
   frameTx += water;
@@ -280,7 +282,7 @@ void dataWaterSend() {
 void dataTempSend() {
   String frameTx = "";
   /* Gui frame nhiet do */
-  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0201\",\"DATA\":\"";
+  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0201\",\"DATA\":\"";
 
   float rTemp = readTemperatureSensor();
   String temp(rTemp);
@@ -298,24 +300,24 @@ float readTemperatureSensor() {
   delay(50);
   return sensors.getTempCByIndex(0);
 }
-/*
+
 void Blink (void)
 {
   static int i = 0;
   i++;
-  if (i > 30)
+  if (i > 10)
   {
     dataTempSend();
-    delay(50);
-    dataWaterSend();
+    //delay(50);
+    //dataWaterSend();
     i = 0;
   }
-  int temp;
-  temp = (int)(readTemperatureSensor());
-  if (temp >= Tth)
-    deviceControl ("2", "On");
-  else if (temp < Tth)
-    deviceControl ("2", "Off"); 
+//  int temp;
+//  temp = (int)(readTemperatureSensor());
+//  if (temp >= Tth)
+//    deviceControl ("2", "On");
+//  else if (temp < Tth)
+//    deviceControl ("2", "Off"); 
 }
-*/
+
 
