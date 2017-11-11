@@ -60,7 +60,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
  */
 void mqttCreateTopic(void)
 {
-  String _nameTopic = "ESP" + Get_macID();
+  String _nameTopic = "CSR" + Get_macID();
   
   String _topic = _nameTopic + "/master";
   _topic.toCharArray(gMqttTopicIn, 24);
