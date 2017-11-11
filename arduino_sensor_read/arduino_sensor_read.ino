@@ -29,8 +29,8 @@ void setup() {
   pinMode(DEVICE_2, OUTPUT);
   pinMode(BUTTON_1, INPUT_PULLUP);
   pinMode(BUTTON_2, INPUT_PULLUP);
-  deviceControl("1", "Off");
-  deviceControl("2", "Off");
+  deviceControl("0101", "0");
+  deviceControl("0102", "0");
   delay(500); //delay to not recv sh*t data from esp reset
   /* Mo cong uart de giao tiep */
   Serial.begin(115200);
@@ -172,7 +172,7 @@ void waterCheck() {
   else {
     if((millis() - _lastPressed) > 500) {
       if(_isPressed == false) {
-        deviceStatusSend("002", "0401", (reading == LOW)? "0" : "0");
+        deviceStatusSend("002", "0401", (reading == LOW)? "0" : "1");
         _isPressed = true;
       }
     }
@@ -182,7 +182,7 @@ void waterCheck() {
 
 void sendErrorFrame(String code) {
   String frameTx = "";
-  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"";
+  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"";
   frameTx += "003";
   frameTx += "\",\"ADDR\":\"";
   frameTx += "";
@@ -194,7 +194,7 @@ void sendErrorFrame(String code) {
 
 void deviceStatusSend(String func, String addr, String data){
   String frameTx = "";
-  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"";
+  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"";
   frameTx += func;
   frameTx += "\",\"ADDR\":\"";
   frameTx += addr;
@@ -269,7 +269,7 @@ bool uartGetFrame(String* s) {
 void dataWaterSend() {
   String frameTx = "";
   /* Gui frame muc nuoc */
-  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0401\",\"DATA\":\"";
+  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0401\",\"DATA\":\"";
   bool rWater = isWaterThreshold();
   String water = (rWater)? "1" : "0";
   frameTx += water;
@@ -280,7 +280,7 @@ void dataWaterSend() {
 void dataTempSend() {
   String frameTx = "";
   /* Gui frame nhiet do */
-  frameTx = "{\"ID\":\"ESP5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0201\",\"DATA\":\"";
+  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0201\",\"DATA\":\"";
 
   float rTemp = readTemperatureSensor();
   String temp(rTemp);
@@ -303,19 +303,20 @@ void Blink (void)
 {
   static int i = 0;
   i++;
-  if (i > 30)
+  if (i > 10)
   {
     dataTempSend();
-    delay(50);
-    dataWaterSend();
+    //delay(50);
+    //dataWaterSend();
     i = 0;
   }
-  int temp;
-  temp = (int)(readTemperatureSensor());
-  if (temp >= Tth)
-    deviceControl ("2", "On");
-  else if (temp < Tth)
-    deviceControl ("2", "Off"); 
+//  int temp;
+//  temp = (int)(readTemperatureSensor());
+//  if (temp >= Tth)
+//    deviceControl ("2", "On");
+//  else if (temp < Tth)
+//    deviceControl ("2", "Off"); 
 }
 */
+
 
