@@ -27,12 +27,10 @@ void setup() {
   pinMode(WATER_SENSOR, INPUT_PULLUP);
   pinMode(DEVICE_1, OUTPUT);
   pinMode(DEVICE_2, OUTPUT);
-  digitalWrite(DEVICE_1, HIGH);
-  digitalWrite(DEVICE_2, HIGH);
   pinMode(BUTTON_1, INPUT_PULLUP);
   pinMode(BUTTON_2, INPUT_PULLUP);
-  deviceControl("1", "Off");
-  deviceControl("2", "Off");
+  deviceControl("0101", "0");
+  deviceControl("0102", "0");
   delay(500); //delay to not recv sh*t data from esp reset
   /* Mo cong uart de giao tiep */
   Serial.begin(115200);
