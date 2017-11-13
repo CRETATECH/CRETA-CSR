@@ -128,7 +128,7 @@ void stateConfig(void)
   if(digitalRead(PIN_BUTTON_CONFIG) != LOW)
   {
   #ifdef DEBUG
-      Serial.println("\r\nStart config...");
+      Serial.println("\r\nDATA: Start config...");
   #endif
     WiFi.beginSmartConfig();
     while(1)
@@ -147,7 +147,7 @@ void stateConfig(void)
       if (WiFi.smartConfigDone())
       {
       #ifdef DEBUG
-        Serial.println("Config done!!!\r\n");
+        Serial.println("SUCCESS: Config done!!!\r\n");
       #endif
         break;
       }
@@ -157,8 +157,6 @@ void stateConfig(void)
     gState = STATE_CONTROL;
   }
 }
-
-
 
 
 /**
@@ -176,26 +174,29 @@ void stateControl(void)
       if (!mqttConnected())
       {
         #ifdef DEBUG
-          Serial.println("MQTT Server not connect...");
+          Serial.println("ERROR: MQTT Server not connect...");
         #endif
         if (mqttConnect())
         {
           mqttSubscribe();
           #ifdef DEBUG
-            Serial.println("MQTT Server connected, subscribe to topic");
+            Serial.println("SUCCESS: MQTT Server connected");
+            Serial.println("PROCESS: Subscribe to topicIn");
           #endif
         }
       }
       else
       {
-//        if (buttonControlCheck() == true)
-//        {
-//          protocolButtonProcess();
-//        }
         String a;
         
         if (protocolSerialRecv(&a) == 1)
+        {
+          #ifdef DEBUG
+            Serial.println("SUCCESS: Recv data from mcu");
+            Serial.println("PROCESS: Publish data to server");
+          #endif
           mqttPublish(a);
+        }
         mqttLoop();
       }
     }
@@ -234,7 +235,7 @@ void Wifi_Connect (void)
   WiFi.begin();
   #ifdef DEBUG
     WiFi.printDiag(Serial);
-    Serial.print("\r\nWiFi connecting");
+    Serial.print("\r\nPROCESS: WiFi connecting");
   #endif
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -251,11 +252,11 @@ void Wifi_Connect (void)
   mqttConnect();
   mqttSubscribe();
   #ifdef DEBUG
-    Serial.println("\r\nWiFi connected!!!");
+    Serial.println("\r\nSUCCESS: WiFi connected!!!");
   #endif
   mqttPubTest();
   #ifdef DEBUG
-    Serial.println("publish test");
+    Serial.println("PROCESS: Publish macID to topicTest");
   #endif
 }
 

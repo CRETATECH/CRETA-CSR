@@ -13,12 +13,16 @@
 #define  FRAME_ERR       1
 #define  PROCESS_ERR     2
 
+enum {
+  ERROR_PARSE_JSON = 1,
+}error_t;
+
 /***************************************************************************************
 * PUBLIC FUNCTION PROTOTYPES
 ***************************************************************************************/
 void protocolInit(void);
-//int pars_json(String json);
-void protocolDataProcess (String recv_json);
-void protocolButtonProcess (void);
+int jsonParse(String pJson);
 int protocolSerialRecv (String *s);
+void protocolSendDatatoMCU (uint8_t* data, int len);
+void protocolDataProcess (uint8_t* data, int len);
 #endif

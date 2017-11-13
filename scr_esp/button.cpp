@@ -24,26 +24,8 @@ bool isButtonPressed = false;
  */
 void buttonInit(void){
     pinMode(PIN_BUTTON_CONFIG, INPUT_PULLUP);
-    /* set Interrupt for BUTTON_CONFIG */
-    attachInterrupt(digitalPinToInterrupt(PIN_BUTTON_CONTROL), buttonConfigISRHandler, CHANGE);
-    pinMode(PIN_BUTTON_CONTROL, INPUT);
 }
-/**
- * @brief       Button IRS Handler
- * @param       None
- * process interrupt, change device state and set flag to network process
- */
-void buttonConfigISRHandler(void){
-    static uint32_t _button_last_pressed = 0;
-    if((millis() - _button_last_pressed) > 150){
-        isButtonPressed = true; //varialbe return to network process
-        #ifdef DEBUG
-          Serial.println("Control button pressed");
-        #endif
-        deviceToggle(); // change state of device         
-    }
-    _button_last_pressed = millis();
-}
+
 /**
  * @brief       Button config check
  * @param       None
@@ -67,16 +49,7 @@ bool buttonConfigCheck(void){
         }
     }
     buttonLastStatus = buttonStatus;
-    return false;
-    
-    
+    return false;  
 }
 
-bool buttonControlCheck(void){
-    if(isButtonPressed == true){
-        isButtonPressed = false;
-        return true;
-    }
-    return false;
-}
 
