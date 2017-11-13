@@ -36,8 +36,8 @@ void setup() {
   Serial.begin(115200);
   while(!Serial);
   
-  // Timer1.initialize(1000000); // khởi tạo timer 1 đến 1 giây
-  // Timer1.attachInterrupt(Blink); 
+  Timer1.initialize(1000000); // khởi tạo timer 1 đến 1 giây
+  Timer1.attachInterrupt(Blink); 
   
   /* Khoi dong cam bien nhiet do */
   sensors.begin();
@@ -46,7 +46,9 @@ void setup() {
 void loop() 
 {
   Serial_Proc ();
-  
+  button1Pressed();
+  button2Pressed();
+  waterCheck();
 }
 
 void Serial_Proc (void)
@@ -74,31 +76,33 @@ void Serial_Proc (void)
         {
           dataWaterSend();
         }
+        else
+          sendErrorFrame("004"); //sai addr
       } else if(func == "001")
         {
-        if(true == deviceControl(addr, data))
-        {
-          /* Gui frame thong bao trang thai moi */
-          if(addr == "0101") 
+          if(true == deviceControl(addr, data))
           {
-            if(digitalRead(DEVICE_1) == HIGH) 
+            /* Gui frame thong bao trang thai moi */
+            if(addr == "0101") 
             {
-              deviceStatusSend("001", addr, "0");
-            } else 
+              if(digitalRead(DEVICE_1) == HIGH) 
               {
-              deviceStatusSend("001", addr, "1");
+                deviceStatusSend("001", addr, "0");
+              } else 
+                {
+                deviceStatusSend("001", addr, "1");
+                }
+            } else if(addr == "0102") 
+              {
+              if(digitalRead(DEVICE_2) == HIGH) 
+              {
+                deviceStatusSend("001", addr, "0");
+              } else {
+                deviceStatusSend("001", addr, "1");
               }
-          } else if(addr == "0102") 
-            {
-            if(digitalRead(DEVICE_2) == HIGH) 
-            {
-              deviceStatusSend("001", addr, "0");
-            } else {
-              deviceStatusSend("001", addr, "1");
             }
           }
         }
-      }
       else {
         sendErrorFrame("002");
       }
@@ -109,9 +113,7 @@ void Serial_Proc (void)
     addr = "";
     data = "";
   }
-  button1Pressed();
-  button2Pressed();
-  waterCheck();
+
 }
 
 void button1Pressed() {
@@ -182,7 +184,7 @@ void waterCheck() {
 
 void sendErrorFrame(String code) {
   String frameTx = "";
-  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"";
+  frameTx = "{\"USER\":\"CSR5ccf7fd16259\",\"FUNC\":\"";
   frameTx += "003";
   frameTx += "\",\"ADDR\":\"";
   frameTx += "";
@@ -194,7 +196,7 @@ void sendErrorFrame(String code) {
 
 void deviceStatusSend(String func, String addr, String data){
   String frameTx = "";
-  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"";
+  frameTx = "{\"USER\":\"CSR5ccf7fd16259\",\"FUNC\":\"";
   frameTx += func;
   frameTx += "\",\"ADDR\":\"";
   frameTx += addr;
@@ -212,6 +214,7 @@ bool deviceControl(String addr, String data){
     _pin = DEVICE_2;
   }
   if(_pin == "") {
+    sendErrorFrame("004"); //sai addr
     return false;
   }
   if(data == "1") {
@@ -219,6 +222,7 @@ bool deviceControl(String addr, String data){
   } else if (data == "0") {
     digitalWrite(_pin, HIGH);
   } else {
+    sendErrorFrame("003");//sai data
     return false;
   }
   return true;
@@ -232,7 +236,7 @@ bool parseJson(String json) {
     sendErrorFrame("001");
     return false;
   }
-  String _a = root["ID"];
+  String _a = root["USER"];
   id = _a;
   String _b = root["FUNC"];
   func = _b;
@@ -269,7 +273,7 @@ bool uartGetFrame(String* s) {
 void dataWaterSend() {
   String frameTx = "";
   /* Gui frame muc nuoc */
-  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0401\",\"DATA\":\"";
+  frameTx = "{\"USER\":\"CSR5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0401\",\"DATA\":\"";
   bool rWater = isWaterThreshold();
   String water = (rWater)? "1" : "0";
   frameTx += water;
@@ -280,7 +284,7 @@ void dataWaterSend() {
 void dataTempSend() {
   String frameTx = "";
   /* Gui frame nhiet do */
-  frameTx = "{\"ID\":\"CSR5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0201\",\"DATA\":\"";
+  frameTx = "{\"USER\":\"CSR5ccf7fd16259\",\"FUNC\":\"002\",\"ADDR\":\"0201\",\"DATA\":\"";
 
   float rTemp = readTemperatureSensor();
   String temp(rTemp);
@@ -298,7 +302,7 @@ float readTemperatureSensor() {
   delay(50);
   return sensors.getTempCByIndex(0);
 }
-/*
+
 void Blink (void)
 {
   static int i = 0;
@@ -317,6 +321,6 @@ void Blink (void)
 //  else if (temp < Tth)
 //    deviceControl ("2", "Off"); 
 }
-*/
+
 
 
