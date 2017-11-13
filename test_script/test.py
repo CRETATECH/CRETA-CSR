@@ -43,7 +43,7 @@ def deviceControl(device, value):
     start = datetime.now()
     while flag is False:
         client.loop()
-        timedelta = (datetime.now() - start).milisecond()
+        timedelta = (datetime.now() - start).microseconds/1000
     return timedelta
 
 def onMessage(client, userdata, msg):
@@ -102,14 +102,20 @@ def main(argv):
         client.loop()
     flag = False
     count = 0
+    summ = 0
     respond = 0
     while True:
         try:
-            deviceControl('0101', '1')
-            deviceControl('0102', '1')
-            deviceControl('0101', '0')
-            deviceControl('0102', '0')
+            summ = summ + deviceControl('0101', '1')
+            count = count + 1
+            summ = summ + deviceControl('0102', '1')
+            count = count + 1
+            summ = summ + deviceControl('0101', '0')
+            count = count + 1
+            summ = summ + deviceControl('0102', '0')
+            count = count + 1
         except KeyboardInterrupt:
+            print(str(summ/count))
             sys.exit()
     client.loop_forever()
 
