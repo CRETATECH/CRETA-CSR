@@ -2,12 +2,7 @@
 #include <DallasTemperature.h>
 #include <OneWire.h>
 #include <TimerOne.h>
-#define ONE_WIRE_BUS 2
-#define WATER_SENSOR 3 // Pin 3
-#define DEVICE_1 4
-#define DEVICE_2 5
-#define BUTTON_1 6
-#define BUTTON_2 7
+#include "defineHardWare.h"
 
 OneWire onewire(ONE_WIRE_BUS);
 DallasTemperature sensors(&onewire);
@@ -27,6 +22,8 @@ void setup() {
   pinMode(WATER_SENSOR, INPUT_PULLUP);
   pinMode(DEVICE_1, OUTPUT);
   pinMode(DEVICE_2, OUTPUT);
+  pinMode(LED_1, OUTPUT);
+  pinMode(LED_2, OUTPUT);
   pinMode(BUTTON_1, INPUT_PULLUP);
   pinMode(BUTTON_2, INPUT_PULLUP);
   deviceControl("0101", "0");
@@ -49,6 +46,9 @@ void loop()
   button1Pressed();
   button2Pressed();
   waterCheck();
+  /* Relay status led */
+  digitalWrite(LED_1, !digitalRead(DEVICE_1));
+  digitalWrite(LED_2, !digitalRead(DEVICE_2));
 }
 
 void Serial_Proc (void)
@@ -113,7 +113,6 @@ void Serial_Proc (void)
     addr = "";
     data = "";
   }
-
 }
 
 void button1Pressed() {
